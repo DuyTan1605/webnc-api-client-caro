@@ -18,19 +18,19 @@ const AuthMiddleWare = require("../middleware/AuthMiddleware");
 const axios = require("axios");
 
 
-accountRoute.get("/", async function (req, res) {
-  try {
-    const accountList = await accountModel.findAll(
-      {
-        attributes: { exclude: ['id'] }
-      })
-    res.status(200).send(accountList);
-  }
-  catch (err) {
-    console.log(err);
-    res.send(err);
-  }
-})
+// accountRoute.get("/", async function (req, res) {
+//   try {
+//     const accountList = await accountModel.findAll(
+//       {
+//         attributes: { exclude: ['id'] }
+//       })
+//     res.status(200).send(accountList);
+//   }
+//   catch (err) {
+//     console.log(err);
+//     res.send(err);
+//   }
+// })
 
 accountRoute.post("/login", async function (req, res) {
   const users = await accountModel.findAll()
@@ -75,10 +75,7 @@ accountRoute.post("/login", async function (req, res) {
 
 
 accountRoute.post("/loginWithSocial", async function (req, res) {
-  const users = await accountModel.findAll(
-    {
-      attributes: { exclude: ['id'] }
-    })
+  const users = await accountModel.findAll()
   console.log(req.headers["x-access-token"]);
   console.log(req.body);
   if (req.body.type == "google") {
@@ -143,10 +140,7 @@ accountRoute.post("/loginWithSocial", async function (req, res) {
 
 
 accountRoute.post("/register", async function (req, res) {
-  const users = await accountModel.findAll(
-    {
-      attributes: { exclude: ['id'] }
-    })
+  const users = await accountModel.findAll()
   var user = users[_.findIndex(users, { email: req.body.email })];
   if (user) {
     return res.status(401).json({ message: "Account alrealy existed" });

@@ -3,7 +3,7 @@ const jwt=require("jsonwebtoken");
 let generateToken=(user,secretSignature,tokenLife)=>{
     return new Promise((resolve,reject)=>{
         const userData={
-            iduser:user.iduser,
+            id:user.id,
             name:user.name,
             email:user.email,
             created_at:user.created_at

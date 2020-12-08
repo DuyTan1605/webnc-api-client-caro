@@ -13,8 +13,8 @@ exports.connect=(server)=>
         });
 
         socket.on('login', async(message) => {
-           console.log(message);
-           if(_.findIndex(listUser,{iduser:message.iduser})<0)
+           console.log("Message:", message);
+           if(_.findIndex(listUser,{id:message.id})<0)
            {
                 listUser.push(message);
            }
@@ -23,10 +23,10 @@ exports.connect=(server)=>
         });
         
         socket.on('logout', async(message) => {
-            console.log("User disconnected with id="+ message.iduser);
+            console.log("User disconnected with id="+ message.id);
             listUser = _.filter(listUser,function(user)
             {
-                return user.iduser!=message.iduser;
+                return user.id!=message.id;
             })
             console.log("List user after log out",listUser);
             io.sockets.emit("listonline",listUser)

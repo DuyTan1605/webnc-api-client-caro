@@ -79,7 +79,7 @@ accountRoute.post("/loginWithSocial", async function (req, res) {
   console.log(req.headers["x-access-token"]);
   console.log(req.body);
   if (req.body.type == "google") {
-    const result = await axios.get(`https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=${req.headers["x-access-token"]}`);
+    const result = await axios.get(`https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=${req.body.tokenId}`);
 
     const data = await result.data;
 
@@ -108,7 +108,7 @@ accountRoute.post("/loginWithSocial", async function (req, res) {
     return res.status(401).json({ message: "invalid credentials" });
   }
   else {
-    const result = await axios.get(`https://graph.facebook.com/${req.body.userId}?fields=id,name,picture&access_token=${req.headers["x-access-token"]}`);
+    const result = await axios.get(`https://graph.facebook.com/${req.body.userId}?fields=id,name,picture&access_token=${req.body.tokenId}`);
 
     const data = await result.data;
 

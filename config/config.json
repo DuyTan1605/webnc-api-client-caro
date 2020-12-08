@@ -21,6 +21,9 @@
     "password": "31deede8",
     "database": "database_production",
     "host": "us-cdbr-east-02.cleardb.com",
-    "dialect": "mysql"
+    "dialect": "mysql",
+    "define": {
+      "timestamps": false
+    }
   }
 }

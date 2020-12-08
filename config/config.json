@@ -17,10 +17,10 @@
     "dialect": "mysql"
   },
   "production": {
-    "username": "root",
-    "password": null,
+    "username": "b7a2aa9e6cce2c",
+    "password": "31deede8",
     "database": "database_production",
-    "host": "127.0.0.1",
+    "host": "us-cdbr-east-02.cleardb.com",
     "dialect": "mysql"
   }
 }

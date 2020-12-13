@@ -8,11 +8,11 @@ const cors=require('cors');
 const dotenv= require('dotenv').config();
 
 const accountRouter = require('./routes/accountRoute');
-
+const boardRouter = require("./routes/boardRoute");
 const app = express();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'pug');
+app.set('view engine', 'jade');
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -24,6 +24,7 @@ app.use(cors());
 
 
 app.use('/account', accountRouter);
+app.use("/board",boardRouter)
 // app.use(AuthMiddleWare.isAuth);
 
 

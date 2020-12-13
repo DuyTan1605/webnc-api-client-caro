@@ -17,21 +17,6 @@ const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
 const AuthMiddleWare = require("../middleware/AuthMiddleware");
 const axios = require("axios");
 
-
-// accountRoute.get("/", async function (req, res) {
-//   try {
-//     const accountList = await accountModel.findAll(
-//       {
-//         attributes: { exclude: ['id'] }
-//       })
-//     res.status(200).send(accountList);
-//   }
-//   catch (err) {
-//     console.log(err);
-//     res.send(err);
-//   }
-// })
-
 accountRoute.post("/login", async function (req, res) {
   const users = await accountModel.findAll()
 

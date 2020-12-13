@@ -7,6 +7,7 @@ let isAuth = async (req, res, next) => {
     if (tokenFromClient) {
         try {
             const decoded = await jwtHelper.verifyToken(tokenFromClient, accessTokenSecret);
+            console.log("decoced: ",decoded)
             req.jwtDecoded = decoded;
             next();
         }

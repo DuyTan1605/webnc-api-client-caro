@@ -14,7 +14,7 @@ module.exports = {
       created_by: {
         type: Sequelize.INTEGER,
         references:{
-          model: 'user',
+          model: 'users',
           key : 'id'
         }
       },

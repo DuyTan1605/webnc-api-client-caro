@@ -24,18 +24,6 @@ exports.connect=(server)=>
     io.on("connection", (socket) => {
         console.log("List user now",listUser);
 
-        socket.on("newAnonymousUser",async (message)=>
-        {
-            console.log("new anouy");
-           
-            if(_.findIndex(listUser,{id:message.id})<0)
-            {
-                 listUser.push({...message,idDevice:socket.id});
-            }
-            console.log(listUser)
-            io.emit("listonline",listUser);
-        })
-
         socket.on('connect',async () => {
             console.log("Socket connected with id: ",socket.id); // true
         });
@@ -44,7 +32,7 @@ exports.connect=(server)=>
            console.log("Message:", message);
            if(_.findIndex(listUser,{id:message.id})<0)
            {
-                listUser.push(message);
+                listUser.push({...message,idDevice:socket.id});
            }
            console.log("New list user",listUser);
             io.emit("listonline",listUser);
@@ -75,12 +63,15 @@ exports.connect=(server)=>
 
         socket.on('joinRoom', ({ username, room }) => {
             const user = userJoin(socket.id, username, room);
-        
+
+            //console.log(user);
             socket.join(user.room);
         
             // Welcome current user
             socket.emit('message', formatMessage(botName, 'Welcome to ChatCord!'));
-        
+
+            socket.emit('player',user);
+            socket.emit("nowStep","X");
             // Broadcast when a user connects
             socket.broadcast
               .to(user.room)
@@ -124,18 +115,39 @@ exports.connect=(server)=>
             }
         })
 
+        //-------------------------------PLAY GAME----------------------------------
+
+
+        socket.on("move",data=>{
+          console.log(data);
+          io.to(data.room).emit("move",data);
+        })
+
+        // socket.on("nowStep",data=>{
+        //   socket.broadcast
+        //   .to(data.room).emit("nowStep",data)
+        //         })
+
+
+
+
+
+
+
+
+        //----------------------------------------------------------------------------------
         socket.on("disconnect", async (data) => {
-            // console.log("Client disconnected", socket.id);
-            // const index = _.findIndex(listUser,{idDevice:socket.id});
-            // console.log(index);
-            // if(index>=0)
-            // {
-            //     listUser.splice(index,1);
-            //     console.log("List client after disconnect: ",listUser);
-            //     io.emit("listonline",listUser);
-            // }
-            // console.log("List client after disconnect1: ",listUser);
-            // io.sockets.emit("listonline",listUser);
+            console.log("Client disconnected", socket.id);
+            const index = _.findIndex(listUser,{idDevice:socket.id});
+            console.log(index);
+            if(index>=0)
+            {
+                listUser.splice(index,1);
+                console.log("List client after disconnect: ",listUser);
+                io.emit("listonline",listUser);
+            }
+            console.log("List client after disconnect1: ",listUser);
+            io.sockets.emit("listonline",listUser);
             //clearInterval(interval);
 
             const user = userLeave(socket.id);

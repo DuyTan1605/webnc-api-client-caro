@@ -1,0 +1,29 @@
+{
+  "development": {
+    "username": "root",
+    "password": "123",
+    "database": "client_caro",
+    "host": "127.0.0.1",
+    "dialect": "mysql",
+    "define": {
+      "timestamps": false
+    }
+  },
+  "test": {
+    "username": "root",
+    "password": null,
+    "database": "database_test",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  },
+  "production": {
+    "username": "b7a2aa9e6cce2c",
+    "password": "31deede8",
+    "database": "heroku_05eae98e1f14da1",
+    "host": "us-cdbr-east-02.cleardb.com",
+    "dialect": "mysql",
+    "define": {
+      "timestamps": false
+    }
+  }
+}

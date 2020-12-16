@@ -47,9 +47,21 @@ function getRoomUsers(room) {
   return users.filter(user => user.room === room);
 }
 
+function getDataFromRoom(data)
+{
+  const winnerIndex = _.findIndex(users,{room:data.room,player:data.winner}); 
+  const loserIndex = _.findIndex(users,{room:data.room,player:data.winner=="X"?"O":"X"});
+  console.log(users);
+  console.log(data,winnerIndex)
+  return {
+    winner:users[winnerIndex].id,
+    loser: users[loserIndex].id
+  }
+}
 module.exports = {
   userJoin,
   getCurrentUser,
   userLeave,
-  getRoomUsers
+  getRoomUsers,
+  getDataFromRoom
 };

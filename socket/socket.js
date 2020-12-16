@@ -1,14 +1,16 @@
 const socketIo = require("socket.io");
 var listUser=[];
 const _= require('lodash');
-const { async } = require("q");
 const { boards: boardModel } = require("../models/index")
+const { users: userModel } = require("../models/index")
+const { history: historyModel } = require("../models/index")
 const formatMessage = require('./message');
 const {
   userJoin,
   getCurrentUser,
   userLeave,
-  getRoomUsers
+  getRoomUsers,
+  getDataFromRoom
 } = require('./users');
 
 
@@ -52,7 +54,18 @@ exports.connect=(server)=>
         
         socket.on("listBoard", async ()=>{
             console.log("Emit board");
-            const boards = await boardModel.findAll();
+            boardModel.belongsTo(userModel,{foreignKey:'created_by',targetKey:'id'});
+
+            const boards = await boardModel.findAll(
+              {
+                include: [
+                  {
+                    model: userModel,
+                    attributes: ['name']
+                  }
+                ]
+              }
+            );
             io.emit("listBoard",boards);
         })
 
@@ -63,12 +76,13 @@ exports.connect=(server)=>
 
         socket.on('joinRoom', ({ username, room }) => {
             const user = userJoin(socket.id, username, room);
+            const numberUser=getRoomUsers(room).length;
 
             //console.log(user);
             socket.join(user.room);
         
             // Welcome current user
-            socket.emit('message', formatMessage(botName, 'Welcome to ChatCord!'));
+            socket.emit('message', formatMessage(botName, 'Welcome !'));
 
             socket.emit('player',user);
             socket.emit("nowStep","X");
@@ -77,7 +91,7 @@ exports.connect=(server)=>
               .to(user.room)
               .emit(
                 'message',
-                formatMessage(botName, `${user.username} has joined the chat`)
+                formatMessage(botName, `${user.username} has joined room`)
               );
         
             // Send users and room info
@@ -85,6 +99,14 @@ exports.connect=(server)=>
               room: user.room,
               users: getRoomUsers(user.room)
             });
+            console.log(numberUser);
+            if(numberUser<2)
+            {
+              io.to(user.room).emit("gameStart",false)
+            }
+            else{
+              io.to(user.room).emit("gameStart",true);
+            }
           });
         
         socket.on('chatMessage', msg => {
@@ -100,7 +122,7 @@ exports.connect=(server)=>
             if (user) {
               io.to(user.room).emit(
                 'message',
-                formatMessage(botName, `${user.username} has left the chat`)
+                formatMessage(botName, `${user.username} has left room`)
               );
         
               // Send users and room info
@@ -129,7 +151,33 @@ exports.connect=(server)=>
         //         })
 
 
+        socket.on("history",data=>{
 
+          console.log("DAta: ",data);
+          const result=getDataFromRoom({room:data.room,winner:data.winner});
+          console.log(result);
+          historyModel.create({
+            boardBelong: parseInt(data.room),
+            winner: result.winner,
+            loser: result.loser,
+            data: JSON.stringify(data.data),
+          })
+          // const historyData={
+          //   board:data.
+          // }
+          // await historyModel.create(data);
+          // const result = await boardModel.findAll(
+          //   {
+          //     include: [
+          //       {
+          //         model: userModel,
+          //         attributes: ['name']
+          //       }
+          //     ]
+          //   }
+          // );
+
+        })
 
 
 

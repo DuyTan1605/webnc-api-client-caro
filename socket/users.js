@@ -2,7 +2,7 @@ const users = [];
 const _= require("lodash");
 
 // Join user to chat
-function userJoin(id, username, room) {
+function userJoin(id, username, room,idUser) {
 
   const pos=_.findIndex(users,{id:id});
   console.log(id,username,room)
@@ -11,7 +11,7 @@ function userJoin(id, username, room) {
     return users[pos];
   }
 
-  const user = { id, username, room };
+  const user = { id, username, room ,idUser};
 
   user.player = "guest";
 
@@ -54,8 +54,8 @@ function getDataFromRoom(data)
   console.log(users);
   console.log(data,winnerIndex)
   return {
-    winner:users[winnerIndex].id,
-    loser: users[loserIndex].id
+    winner:users[winnerIndex].idUser,
+    loser: users[loserIndex].idUser
   }
 }
 module.exports = {

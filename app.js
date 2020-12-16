@@ -9,6 +9,7 @@ const dotenv= require('dotenv').config();
 
 const accountRouter = require('./routes/accountRoute');
 const boardRouter = require("./routes/boardRoute");
+const historyRouter = require("./routes/historyRoute");
 const app = express();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -25,6 +26,7 @@ app.use(cors());
 
 app.use('/account', accountRouter);
 app.use("/board",boardRouter)
+app.use("/history",historyRouter)
 // app.use(AuthMiddleWare.isAuth);
 
 

@@ -74,8 +74,8 @@ exports.connect=(server)=>
         })
         //-------------------------------------------CHAT ROOM--------------------------------------------
 
-        socket.on('joinRoom', ({ username, room }) => {
-            const user = userJoin(socket.id, username, room);
+        socket.on('joinRoom', ({ username, room,idUser }) => {
+            const user = userJoin(socket.id, username, room,idUser);
             const numberUser=getRoomUsers(room).length;
 
             //console.log(user);
@@ -142,7 +142,8 @@ exports.connect=(server)=>
 
         socket.on("move",data=>{
           console.log(data);
-          io.to(data.room).emit("move",data);
+          socket.broadcast
+          .to(data.room).emit("move",data);
         })
 
         // socket.on("nowStep",data=>{
@@ -156,8 +157,12 @@ exports.connect=(server)=>
           console.log("DAta: ",data);
           const result=getDataFromRoom({room:data.room,winner:data.winner});
           console.log(result);
+          console.log("Ne data:",{
+            board: parseInt(data.room),
+            winner: result.winner,
+            loser: result.loser})
           historyModel.create({
-            boardBelong: parseInt(data.room),
+            board: parseInt(data.room),
             winner: result.winner,
             loser: result.loser,
             data: JSON.stringify(data.data),

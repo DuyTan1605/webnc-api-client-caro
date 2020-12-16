@@ -8,8 +8,8 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      boardBelong: {
-        type: Sequelize.STRING,
+      board: {
+        type: Sequelize.INTEGER,
       },
       winner: {
         type: Sequelize.STRING

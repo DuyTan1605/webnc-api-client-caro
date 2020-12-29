@@ -15,7 +15,14 @@ module.exports = (sequelize, DataTypes) => {
   };
   boards.init({
     name: DataTypes.STRING,
-    created_by: DataTypes.INTEGER
+    created_by: 
+    {
+      type:DataTypes.INTEGER,
+      references: {
+        model: "users",
+        key: "id"
+      }
+    }
   }, {
     sequelize,
     modelName: 'boards',

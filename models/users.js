@@ -24,7 +24,13 @@ module.exports = (sequelize, DataTypes) => {
     email: DataTypes.STRING,
     password: DataTypes.STRING,
     avatar: DataTypes.STRING,
-    account_type: DataTypes.INTEGER,
+    account_type: {
+      type:DataTypes.INTEGER,
+      references: {
+        model: "accounttype",
+        key: "id"
+      }
+    },
     point: DataTypes.INTEGER,
     refresh_token: DataTypes.STRING,
     created_at: DataTypes.STRING,

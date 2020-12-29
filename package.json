@@ -7,7 +7,7 @@
     "dev": "nodemon ./bin/www"
   },
   "dependencies": {
-    "axios": "^0.21.0",
+    "axios": "^0.21.1",
     "bcrypt": "^5.0.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
@@ -18,11 +18,17 @@
     "jade": "~1.11.0",
     "lodash": "^4.17.20",
     "moment": "^2.29.1",
-    "morgan": "^1.9.1",
+    "morgan": "^1.10.0",
+    "mysql": "^2.18.1",
     "mysql2": "^2.2.5",
     "nodemon": "^2.0.6",
     "passport": "^0.4.1",
+    "passport-facebook": "^3.0.0",
+    "passport-google": "^0.3.0",
+    "passport-google-oauth": "^2.0.0",
+    "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.0",
+    "passport-local": "^1.0.0",
     "q": "^1.5.1",
     "sequelize": "^6.3.5",
     "socket.io": "^3.0.4"

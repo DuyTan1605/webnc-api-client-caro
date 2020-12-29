@@ -3,6 +3,7 @@ var listUser=[];
 const _= require('lodash');
 const { async } = require("q");
 const { boards: boardModel } = require("../models/index")
+const { users: userModel } = require("../models/index")
 const formatMessage = require('./message');
 const {
   userJoin,
@@ -11,6 +12,9 @@ const {
   getRoomUsers
 } = require('./users');
 
+const {
+ newMove
+} = require("./board");
 
 const botName = "CHAT BOT ROOM";
 
@@ -24,18 +28,7 @@ exports.connect=(server)=>
     io.on("connection", (socket) => {
         console.log("List user now",listUser);
 
-        socket.on("newAnonymousUser",async (message)=>
-        {
-            console.log("new anouy");
-           
-            if(_.findIndex(listUser,{id:message.id})<0)
-            {
-                 listUser.push({...message,idDevice:socket.id});
-            }
-            console.log(listUser)
-            io.emit("listonline",listUser);
-        })
-
+       
         socket.on('connect',async () => {
             console.log("Socket connected with id: ",socket.id); // true
         });
@@ -44,7 +37,7 @@ exports.connect=(server)=>
            console.log("Message:", message);
            if(_.findIndex(listUser,{id:message.id})<0)
            {
-                listUser.push(message);
+                listUser.push({...message,idDevice:socket.id});
            }
            console.log("New list user",listUser);
             io.emit("listonline",listUser);
@@ -63,8 +56,18 @@ exports.connect=(server)=>
 
         
         socket.on("listBoard", async ()=>{
-            console.log("Emit board");
-            const boards = await boardModel.findAll();
+          boardModel.belongsTo(userModel,{foreignKey: 'created_by', targetKey: 'id'})
+          const boards = await boardModel.findAll(
+            {
+            include:[
+              {
+              model: userModel,
+              attributes: ["name"]
+              }
+            ]
+          }
+          );
+            
             io.emit("listBoard",boards);
         })
 
@@ -80,7 +83,7 @@ exports.connect=(server)=>
         
             // Welcome current user
             socket.emit('message', formatMessage(botName, 'Welcome to ChatCord!'));
-        
+            socket.emit('player',user.player);
             // Broadcast when a user connects
             socket.broadcast
               .to(user.room)
@@ -124,18 +127,32 @@ exports.connect=(server)=>
             }
         })
 
+        socket.on("move",(data)=>{
+          const user = getCurrentUser(socket.id);
+          //const newBoard=newBoard(data);
+          const newData = {
+            i:data.i,
+            player: data.player,
+            stepNumber: data.stepNumber,
+            history:data.history,
+            currentRole:data.currentRole
+          }
+          console.log(newData);
+          socket.broadcast.to(user.room).emit("move",newData);
+        })
+
         socket.on("disconnect", async (data) => {
-            // console.log("Client disconnected", socket.id);
-            // const index = _.findIndex(listUser,{idDevice:socket.id});
-            // console.log(index);
-            // if(index>=0)
-            // {
-            //     listUser.splice(index,1);
-            //     console.log("List client after disconnect: ",listUser);
-            //     io.emit("listonline",listUser);
-            // }
-            // console.log("List client after disconnect1: ",listUser);
-            // io.sockets.emit("listonline",listUser);
+            console.log("Client disconnected", socket.id);
+            const index = _.findIndex(listUser,{idDevice:socket.id});
+            console.log(index);
+            if(index>=0)
+            {
+                listUser.splice(index,1);
+                console.log("List client after disconnect: ",listUser);
+                io.sockets.emit("listonline",listUser);
+            }
+            console.log("List client after disconnect1: ",listUser);
+            io.sockets.emit("listonline",listUser);
             //clearInterval(interval);
 
             const user = userLeave(socket.id);

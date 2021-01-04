@@ -42,6 +42,7 @@ module.exports = {
             var id = entity[idField];
             delete entity[idField];
             var sql = `update ${tablename} set ? where ${idField} = ?`;
+            console.log(sql)
             var connection = createConnection();
             connection.connect();
             connection.query(sql, [entity, id], (error, value) => {

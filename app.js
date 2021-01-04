@@ -10,7 +10,7 @@ const passport = require("passport");
 
 
 const accountRouter = require('./routes/accountRoute');
-const boardRouter = require("./routes/boardRoute");
+const boardRouter = require("./routes/board.route");
 const usersRouter = require("./routes/user.route");
 const profileRouter = require("./routes/profile.route")
 const app = express();
@@ -30,13 +30,17 @@ require('./middleware/passport');
 
 
 app.use('/account', accountRouter);
-app.use("/board",boardRouter)
+app.use("/boards",passport.authenticate('jwt', {
+  session: false
+}),boardRouter)
 // app.use(AuthMiddleWare.isAuth);
 app.use('/users', usersRouter);
 
 app.use('/', passport.authenticate('jwt', {
   session: false
 }), profileRouter);
+
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

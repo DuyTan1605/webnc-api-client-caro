@@ -11,10 +11,14 @@ module.exports = {
         return db.load(`select * from users where ${entity.key} = '${entity.value}'`);
     },
     checkExisted: (entity)=>{
-        return db.load(`select * from users where ${entity.key} = '${entity.value}'`)
+        return db.load(`select * from users where ${entity.key} = '${entity.value}' and account_type = 1`)
     },
     getAccountByType: entity=>{
         return db.load(`select * from users where ${entity.key} = '${entity.value}' and account_type='${entity.account_type}'`);
+    },
+    update : (field,entity) =>{
+        console.log(field,entity)
+        return db.update(`users`, field , entity);
     }
 
 }

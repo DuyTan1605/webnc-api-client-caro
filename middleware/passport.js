@@ -27,11 +27,22 @@ passport.use(new JWTStrategy({
     (jwtPayload, done) => {
         console.log(jwtPayload)
         // find the others information of user in database if needed
-        return userModel.get({key:"id",value:jwtPayload.id}).then(user => {
-            return done(null, user);
-        }).catch(err => {
-            return done(err);
-        });
+        if(jwtPayload.id)
+        {
+            return userModel.get({key:"id",value:jwtPayload.id}).then(user => {
+                return done(null, user);
+            }).catch(err => {
+                console.log(err);
+                return done(err);
+            });
+        }
+        else{
+            return userModel.getAccountByType({key:"email",value:jwtPayload.email,account_type:1}).then(user => {
+                return done(null, user);
+            }).catch(err => {
+                return done(err);
+            });
+        }
     }
 ));
 
@@ -58,7 +69,13 @@ passport.use(new LocalStrategy({
                     email: user.email,
                     point: user.point,
                     account_type: user.account_type,
-                    avatar: user.avatar
+                    avatar: user.avatar,
+                    activate: user.activate,
+                    created_at: user.created_at,
+                    rank: user.rank,
+                    total_match: user.total_match,
+                    percent_win: user.percent_win,
+
                 });
             } else {
                 return done(null, false, {
@@ -94,7 +111,11 @@ passport.use(new FacebookStrategy({
                         created_at : rows[0].created_at,
                         point: rows[0].point,
                         account_type: rows[0].account_type,
-                        avatar: rows[0].avatar
+                        avatar: rows[0].avatar,
+                        activate: rows[0].activate,
+                        rank: rows[0].rank,
+                        total_match: rows[0].total_match,
+                        percent_win: rows[0].percent_win,
                     });
                 }
 
@@ -142,6 +163,7 @@ passport.use(new GoogleStrategy({
 
                 // if account exists, just return it
                 if (rows.length > 0) {
+                    console.log(rows[0]);
                     return done(null, {
                         name: rows[0].name,
                         id: rows[0].id,
@@ -149,7 +171,11 @@ passport.use(new GoogleStrategy({
                         created_at : rows[0].created_at,
                         point: rows[0].point,
                         account_type: rows[0].account_type,
-                        avatar: rows[0].avatar
+                        avatar: rows[0].avatar,
+                        activate: rows[0].activate,
+                        rank: rows[0].rank,
+                        total_match: rows[0].total_match,
+                        percent_win: rows[0].percent_win,
                     });
                 }
 

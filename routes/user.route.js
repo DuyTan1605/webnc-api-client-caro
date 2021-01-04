@@ -8,6 +8,19 @@ var passport = require('passport');
 var config = require("../config");
 //var config = require('../config.js');
 var helpers = require("../public/helpers/helpers")
+const { cloudinary } = require('../utils/cloudinary');
+
+var nodemailer = require('nodemailer');
+
+var transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'dreamleage2000@gmail.com',
+    pass: '0949844063'
+  }
+});
+
+
 // test loading database
 router.post('/', (req, res, next) => {
     userModel.all().then(rows => {
@@ -21,6 +34,8 @@ router.post('/', (req, res, next) => {
         });
     });
 });
+
+
 
 // register a new user
 router.post('/register', async (req, res, next) => {
@@ -50,7 +65,8 @@ router.post('/register', async (req, res, next) => {
             email: email,
             point: 0,
             created_at: helpers.getDate(),
-            account_type: 1
+            account_type: 1,
+            activate: 0
         }
        
         const result=await userModel.checkExisted({key:"email",value:email});
@@ -62,9 +78,30 @@ router.post('/register', async (req, res, next) => {
             });
          }
        else{
+
+            const token = jwt.sign(JSON.stringify({name,email,password}), 'caro_client'); 
+      
+            var mailOptions = {
+                from: 'caro@gmail.com',
+                to: email,
+                subject: 'Verification account by email',
+                html: `<h1>Welcome Caro !Click Link to activate your account</h1>
+                <a>${config["client-domain"]}activate/${token}</a>`
+              };
+              
+              transporter.sendMail(mailOptions, function(error, info){
+                if (error) {
+                  console.log(error);
+                 // res.status(400).json({message:error})
+                } else {
+                   // res.status(200).json({message:"Sent email"})
+                  console.log('Email sent: ' + info.response);
+                }
+              });
+
             userModel.add(entity).then(id => {
                 res.status(200).json({
-                    message: 'Đăng ký tài khoản thành công'
+                    message: "Tạo tài khoản thành công, truy cập email để kịch hoạt tài khoản"
                 });
             }).catch(err => {
 
@@ -89,6 +126,7 @@ router.post('/login', (req, res, next) => {
 
     passport.authenticate('local', {session: false}, (err, user, info) => {
         if (err) {
+            console.log(err);
             return next(err);
         }
         if (!user) {
@@ -98,6 +136,7 @@ router.post('/login', (req, res, next) => {
         }
         req.login(user, {session: false}, (err) => {
             if (err) {
+                console.log(err);
                 res.status(400).json({
                     message: err
                 });
@@ -137,71 +176,145 @@ router.get('/login/google/callback', passport.authenticate('google', {
     res.redirect(config['client-domain'] + 'login?token=' + token + '#caro_client');
 });
 
-// // register a new user
-// router.post('/changeinfo', passport.authenticate('jwt', {session: false}), (req, res, next) => {
+router.post('/forgot',async (req,res,next)=>{
+    console.log("Req body: ",req.body);
+    const result = await userModel.checkExisted({key:"email",value:req.body.email});
+    if(result[0])
+    {
+        const token = jwt.sign(JSON.stringify({email:req.body.email}), 'caro_client');
 
-//     var username = req.body.username;
-//     var oldPassword = req.body.oldPassword;
-//     var password = req.body.password;
-//     var email = req.body.email;
-//     var fullname = req.body.fullname;
+        var mailOptions = {
+            from: 'caro@gmail.com',
+            to: req.body.email,
+            subject: 'Reset password by email',
+            html: `<h1>Welcome Caro !Click Link to reset your password</h1>
+            <a>${config["client-domain"]}reset/${token}</a>`
+          };
+          
+          transporter.sendMail(mailOptions, function(error, info){
+            if (error) {
+              console.log(error);
+             res.status(400).json({message:error})
+            } else {
+               res.status(200).json({message:"Truy cập email để lấy mã rest"})
+              console.log('Email sent: ' + info.response);
+            }
+          });
+    }
+    else{
+        res.status(400).json({message:"Tài khoản không tồn tại"})
+    }
+})
 
-//     // check params
-//     if (!username || !email || !fullname) {
-//         res.status(400).json({
-//             message: 'Vui lòng nhập đầy đủ thông tin'
-//         });
-//     }
-//     else {
-//         userModel.get(username).then(rows => {
-//             if (rows.length === 0) {
-//                 return res.status(400).json({
-//                     message: 'Tài khoản không tồn tại'
-//                 });
-//             }
-//             var user = rows[0];
+router.post('/changePassword', passport.authenticate('jwt', {
+    session: false
+  }),async (req,res,next)=>{
+    const saltRounds = 10;
+    const hash = bcrypt.hashSync(req.body.password, saltRounds);
+    userModel.update("id",{id:req.user[0].id,password:hash})
+    .then(user=>{
+        res.status(200).json({message:"Đổi mật khẩu thành công"})
+    })
+    .catch(err=>{
+        res.status(400).json({message:"Đổi mật khẩu không thành công"})
+    })
+})
 
-//             // update basic info
-//             var entity = {
-//                 username: username,
-//                 email: email,
-//                 fullname: fullname
-//             }
 
-//             // update password
-//             if (oldPassword || password) {
+// register a new user
+router.post('/changeinfo', passport.authenticate('jwt', {session: false}),(req, res, next) => {
 
-//                 // compare password
-//                 var ret = bcrypt.compareSync(oldPassword, user.password);
-//                 if (!ret) {
-//                     return res.status(400).json({
-//                         message: 'Mật khẩu cũ không chính xác'
-//                     });
-//                 }
-//                 else {
-//                     var saltRounds = 10;
-//                     var hash = bcrypt.hashSync(password, saltRounds);
-//                     entity.password = hash;
-//                 }
-//             }
+    var name = req.body.name;
+    var email = req.body.email;
+    var avatar = req.body.avatar;
+    var avatarLink = null;
+        userModel.checkExisted({key:'email',value:email}).then( async rows => {
+            if (rows.length && rows[0].id != req.user[0].id) {
+                return res.status(400).json({
+                    message: 'Email đã tồn tại'
+                });
+            }
+            //var user = rows[0];
 
-//             // write to database
-//             userModel.put(entity).then(id => {
-//                 return res.status(200).json({
-//                     message: 'Cập nhật thông tin thành công'
-//                 });
-//             }).catch(err => {
-//                 return res.status(400).json({
-//                     message: 'Đã xảy ra lỗi, vui lòng thử lại'
-//                 });
-//             })
+            // update basic info
+            var entity = {
+                id: req.user[0].id,
+                name: name,
+                email: email,
+            }
+            if(avatar)
+            {
+                console.log(avatar)
+                try {
+                    const fileStr = avatar;
+                    const uniqueFilename = new Date().toISOString()
+                    const uploadResponse = await cloudinary.uploader.upload(fileStr, 
+                    { public_id: `caro/${uniqueFilename}`, tags: `caro` });
+                    entity.avatar = uploadResponse.url;
+                   //res.json({ msg: 'yaya' });
+                } catch (err) {
+                    console.error(err);
+                   // res.status(500).json({ err: 'Something went wrong' });
+                }
+             }
+
+            // write to database
+            userModel.update("id",entity).then(id => {
+                const newInfo = {...req.user[0], name: name,email: email};
+                return res.status(200).json({
+                    message: 'Cập nhật thông tin thành công',
+                    userInfo: newInfo,
+                    token: jwt.sign(JSON.stringify(newInfo),"caro_client")
+                });
+            }).catch(err => {
+                return res.status(400).json({
+                    message: 'Đã xảy ra lỗi, vui lòng thử lại'
+                });
+            })
             
-//         }).catch(err => {
-//             return res.status(400).json({
-//                 message: 'Đã xảy ra lỗi, vui lòng thử lại'
-//             });
-//         })
-//     }
-// });
+        }).catch(err => {
+            return res.status(400).json({
+                message: 'Đã xảy ra lỗi, vui lòng thử lại'
+            });
+        })
+});
+
+router.post('/changePasswordFromProfile', passport.authenticate('jwt', {session: false}), (req, res, next) => {
+
+        var oldPassword = req.body.oldPassword;
+        var newPassword = req.body.newPassword;
+
+        userModel.get({key:'id',value:req.user[0].id}).then(rows => {
+            if (!bcrypt.compareSync(oldPassword, rows[0].password)) {
+                return res.status(400).json({
+                    message: 'Mật khẩu cũ không chính xác'
+                });
+            }
+            //var user = rows[0];
+
+            // update basic info
+            var entity = {
+                id: req.user[0].id,
+                password: bcrypt.hashSync(newPassword, 10)
+            }
+
+            // write to database
+            userModel.update("id",entity).then(id => {
+                return res.status(200).json({
+                    message: 'Cập nhật mật khẩu thành công'
+                });
+            }).catch(err => {
+                return res.status(400).json({
+                    message: 'Đã xảy ra lỗi, vui lòng thử lại'
+                });
+            })
+            
+        }).catch(err => {
+            return res.status(400).json({
+                message: 'Đã xảy ra lỗi, vui lòng thử lại'
+            });
+        })
+});
+
 
 module.exports = router;

@@ -42,7 +42,11 @@ accountRoute.post("/login", async function (req, res) {
       created_at: user.created_at,
       point: user.point,
       account_type: user.account_type,
-      avatar: user.avatar
+      avatar: user.avatar,
+      rank: user.rank,
+      total_match: user.total_match,
+      percent_win: user.percent_win,
+      activate: user.activate,
     };
     // var token = jwt.sign(payload, jwtOptions.secretOrKey,{expiresIn:"1h"});
     // return res.json({message: "ok", token: token});

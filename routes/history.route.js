@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const historyModel = require("../model/history.model");
+const userModel = require("../model/user.model");
 const _ = require("lodash");
 var helpers = require("../public/helpers/helpers")
 // get history infomation
@@ -17,8 +18,8 @@ var helpers = require("../public/helpers/helpers")
 //     })
 // });
 
-router.post('/add', (req, res, next) => {
-    console.log(req.user);
+router.post('/add', async (req, res, next) => {
+  //  console.log(req.user);
     console.log(req.body);
     const entity = {
         board: req.body.board,
@@ -29,26 +30,73 @@ router.post('/add', (req, res, next) => {
         type: req.body.type
     }
     historyModel.add(entity)
-    .then((history)=>{
-        res.status(200).json({
-        message: "Add history successfully"
-        }
-        );
+        .then((history)=>{
+            res.status(200).json({
+            message: "Add history successfully"
+            });
     })
-    .catch(err=>{
-        console.log(err);
-        res.status(400).json({
-        err
-        });
+        .catch(err=>{
+            console.log(err);
+            res.status(400).json({
+            err
+            });
     })
-    // if(req.body.type == 'normal')
-    // {
-       
-    // }
-    // if(req.body.type == "surrender")
-    // {
 
-    // }
+    if(req.body.type == "normal" || req.body.type == "surrender")
+    {
+        let winnerUser = (await userModel.get({ key: "id", value:req.body.winner }))[0];
+        let loserUser = (await userModel.get({ key: "id", value:req.body.loser }))[0];
+        
+        let newPointWinner = (winnerUser.point < loserUser.point) ? (winnerUser.point+2) : (winnerUser.point+1);
+
+        let newDataWinnerUser = {
+            id: winnerUser.id,
+            point: newPointWinner,
+            total_match : winnerUser.total_match + 1,
+            percent_win : parseFloat(winnerUser.total_win + 1)/(winnerUser.total_match + 1),
+            total_win: winnerUser.total_win + 1,
+            rank: helpers.getRank(newPointWinner),
+        } 
+        console.log(newDataWinnerUser);
+        await userModel.update("id",newDataWinnerUser);
+
+        let newPointLoser = (loserUser.point > winnerUser.point) ? (loserUser.point - 2) : (loserUser.point - 1);
+        newPointLoser = newPointLoser >=0 ? newPointLoser : 0;
+        let newDataLoserUser = {
+            id: loserUser.id,
+            point: newPointLoser,
+            total_match : loserUser.total_match + 1,
+            rank: helpers.getRank(newPointLoser),
+            percent_win : parseFloat(loserUser.total_win)/(loserUser.total_match + 1)
+        }
+        console.log(newDataLoserUser);
+       await userModel.update("id",newDataLoserUser);
+    }
+    if(req.body.type == "draw")
+    {
+        let winnerUser = (await userModel.get({ key: "id", value:req.body.winner }))[0];
+        let loserUser = (await userModel.get({ key: "id", value:req.body.loser }))[0];
+
+        let newDataWinnerUser = {
+            id: winnerUser.id,
+            total_match : winnerUser.total_match + 1,
+            percent_win : parseFloat(winnerUser.total_win)/(winnerUser.total_match + 1)
+        } 
+
+        console.log(newDataWinnerUser);
+        await userModel.update("id",newDataWinnerUser);
+
+        let newDataLoserUser = {
+            id: loserUser.id,
+            total_match : loserUser.total_match + 1,
+            percent_win : parseFloat(loserUser.total_win)/(loserUser.total_match + 1)
+        } 
+
+        console.log(newDataLoserUser);
+        await userModel.update("id",newDataLoserUser);
+    }
+    
+
 });
 
 module.exports = router;

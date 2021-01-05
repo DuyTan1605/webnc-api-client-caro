@@ -1,26 +1,30 @@
 const users = [];
-const _ = require("lodash");
+const _= require("lodash");
 
 // Join user to chat
 function userJoin(id, username, room) {
+
+  const pos=_.findIndex(users,{id:id});
+  console.log(id,username,room)
+  if(pos>=0)
+  {
+    return users[pos];
+  }
+
   const user = { id, username, room };
 
-  const usersInRoom = _.filter(users,{room:room});
-  //console.log(usersInRoom);
-  user.player="guest";
+  user.player = "guest";
 
-  if(usersInRoom.length==0)
+  if(_.filter(users,{"room":room}).length==0)
   {
-    user.player='X'
+    user.player = "X";
   }
-  if(usersInRoom.length==1)
+  if(_.filter(users,{"room":room}).length==1)
   {
-    user.player='O'
+    user.player = "O";
   }
-  console.log(user);
   users.push(user);
-
-  
+  console.log("User: ",user);
   return user;
 }
 

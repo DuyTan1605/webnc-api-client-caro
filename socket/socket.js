@@ -143,19 +143,19 @@ exports.connect = (server)=>
           socket.data = data;
           socket.room = data.room;
           socket.join(data.room);
+          data.user.idDevice = socket.id;
           if(!listRooms[data.room])
           {
             listRooms[data.room]={};
             listRooms[data.room].id = data.room;
             listRooms[data.room].users = [];
           }
-          console.log(!listRooms[data.room].users.findIndex(user=>user.id == data.user.id))
+          
           if(!listRooms[data.room].playerO && listRooms[data.room].users.findIndex(user=>user.id == data.user.id)==-1)
           {
             listRooms[data.room].users.push(data.user);
             listRooms[data.room].playerO = data.user;
             listRooms[data.room].playerO.status = "CONNECTED";
-            console.log("List room return :",listRooms[data.room]);
             //io.in(data.room).emit('joinroom-success',listRooms[data.room]);
           }  
 
@@ -164,15 +164,27 @@ exports.connect = (server)=>
             listRooms[data.room].users.push(data.user);
             listRooms[data.room].playerX = data.user;
             listRooms[data.room].playerX.status = "CONNECTED";
-            console.log("List room return :",listRooms[data.room])
-            
           }
 
           if(listRooms[data.room].users.findIndex(user=>user.id == data.user.id)==-1)
           {
             listRooms[data.room].users.push(data.user);
           }
-          io.in(data.room).emit('joinroom-success',listRooms[data.room]);
+          
+         console.log("List room return :",listRooms[data.room]);
+         if(listRooms[data.room].playerX && listRooms[data.room].playerO)
+         {  
+           io.in(data.room).emit('joinroom-success',listRooms[data.room]);
+          //  io.to(data.room).emit('chat', {
+          //     sender: "Room's Bot",
+          //     message: "User "+ listRooms[data.room].playerX.name + " join room"
+          //   });
+
+          //   io.to(data.room).emit('chat', {
+          //     sender: "Room's Bot",
+          //     message: "User "+ listRooms[data.room].playerO.name + " join room"
+          //   });
+         }
           io.emit('joined-room',listRooms[data.room]);
         });
 
@@ -191,10 +203,12 @@ exports.connect = (server)=>
         socket.on('chat', function (data) {
           console.log(socket.room);
             socket.emit('chat', {
-              sender: 'Tôi',
+              idSender : data.idSender,
+              sender : 'Tôi',
               message: data.message
             });
             socket.to(socket.room).emit('chat', {
+              idSender : data.idSender,
               sender: data.sender,
               message: data.message
             });
@@ -227,7 +241,12 @@ exports.connect = (server)=>
             socket.join(socket.room);
             console.log("Socket room:",listRooms[data.roomInfo.id])
             io.in(socket.room).emit('on-reconnect', listRooms[data.roomInfo.id]);
-            
+
+            socket.to(socket.room).emit('chat', {
+              sender: "Room's Bot",
+              message: "User "+ data.userInfo.name + " join room"
+            });
+
             // send last move in case user missed it when reconnecting
             if (listRooms[data.roomInfo.id].lastMove) {
               socket.emit('move', listRooms[data.roomInfo.id].lastMove);
@@ -236,21 +255,75 @@ exports.connect = (server)=>
           }
         });
 
+
+        socket.on('play-again-request', function (data) {
+            socket.to(socket.room).emit('play-again-request', data);
+        });
+
+        socket.on('play-again-result', function (data) {
+          socket.to(socket.room).emit('play-again-result', data);
+        });
+
+        socket.on('undo-result', function (data) {
+          socket.to(socket.room).emit('undo-result', data);
+        });
+        
+        socket.on('undo-request', function (data) {
+          socket.to(socket.room).emit('undo-request', data);
+      });
+
+        socket.on('surrender-request', function (data) {
+            socket.to(socket.room).emit('surrender-request', '');
+        });
+      
+        socket.on('surrender-result', function (data) {
+          socket.to(socket.room).emit('surrender-result', data);
+          io.in(socket.room).emit('winner',data.winnerId);
+        });
+
+        socket.on('ceasefire-request', function (data) {
+            socket.to(socket.room).emit('ceasefire-request', data);
+        });
+
+        socket.on('ceasefire-result', function (data) {
+          socket.to(socket.room).emit('ceasefire-result', data);
+          io.in(socket.room).emit('winner',"draw");
+        });
+        
+       
+       
+      
+
         //------------------------------------------------------------------------------------
 
 
 
         socket.on("disconnect", async (data) => {
-             console.log("Client disconnected", socket.room);
-            listUser = listUser.filter(user=>user.idDevice != socket.id)
-            io.emit("listonline",listUser);
-            console.log(socket.data);
+            //  console.log("Client disconnected", socket.room);
+            // listUser = listUser.filter(user=>user.idDevice != socket.id)
+            // io.emit("listonline",listUser);
+          
            // clearInterval(interval);
-
            if(socket.room)
            {
+            const pos = listRooms[socket.room].users.findIndex(user => user.idDevice == socket.id);
+            if(pos>=0)
+            {
+              socket.to(socket.room).emit('chat', {
+                sender: "Room's Bot",
+                message: "User "+ listRooms[socket.room].users[pos].name + " left room"
+              });
+            }
+            listRooms[socket.room].users.splice(pos,1);
+            console.log("pos: ",pos);
+            console.log("List users: ",listRooms[socket.room]);
+            socket.emit('joined-room',listRooms[socket.room]);
+
             socket.removeAllListeners();
             socket.leave(socket.room);
+
+            console.log("Client disconnected",socket.data);
+            console.log("Room: ",listRooms[socket.room]);
 
             if (listRooms[socket.room].playerO.id === socket.data.id) {
               listRooms[socket.room].playerO.status = 'DISCONNECTED';

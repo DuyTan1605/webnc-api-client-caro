@@ -11,6 +11,7 @@ const passport = require("passport");
 
 const accountRouter = require('./routes/accountRoute');
 const boardRouter = require("./routes/board.route");
+const historyRouter = require("./routes/history.route")
 const usersRouter = require("./routes/user.route");
 const profileRouter = require("./routes/profile.route")
 const app = express();
@@ -33,6 +34,9 @@ app.use('/account', accountRouter);
 app.use("/boards",passport.authenticate('jwt', {
   session: false
 }),boardRouter)
+app.use("/histories",passport.authenticate('jwt', {
+  session: false
+}),historyRouter)
 // app.use(AuthMiddleWare.isAuth);
 app.use('/users', usersRouter);
 

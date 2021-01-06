@@ -222,20 +222,23 @@ router.post('/changePassword', passport.authenticate('jwt', {
 
 
 // register a new user
-router.post('/changeinfo', passport.authenticate('jwt', {session: false}),(req, res, next) => {
+router.post('/changeinfo', passport.authenticate('jwt', {session: false}), async (req, res, next) => {
 
+    console.log(req.body)
     var name = req.body.name;
     var email = req.body.email;
     var avatar = req.body.avatar;
     var avatarLink = null;
-        userModel.checkExisted({key:'email',value:email}).then( async rows => {
-            if (rows.length && rows[0].id != req.user[0].id) {
-                return res.status(400).json({
-                    message: 'Email đã tồn tại'
-                });
-            }
-            //var user = rows[0];
-
+    if(req.body.type == "normal")
+    {
+        const user = await userModel.checkExisted({key:'email',value:email});
+        if(user.length > 0 && user[0].id != req.user[0].id)
+        {
+            return res.status(400).json({
+                message: 'Email đã tồn tại'
+            });
+        }
+    }
             // update basic info
             var entity = {
                 id: req.user[0].id,
@@ -271,12 +274,6 @@ router.post('/changeinfo', passport.authenticate('jwt', {session: false}),(req, 
                     message: 'Đã xảy ra lỗi, vui lòng thử lại'
                 });
             })
-            
-        }).catch(err => {
-            return res.status(400).json({
-                message: 'Đã xảy ra lỗi, vui lòng thử lại'
-            });
-        })
 });
 
 router.post('/changePasswordFromProfile', passport.authenticate('jwt', {session: false}), (req, res, next) => {

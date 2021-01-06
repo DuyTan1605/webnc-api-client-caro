@@ -141,7 +141,7 @@ exports.connect = (server)=>
 
         socket.on('joinroom', function (data) {
 
-         
+          console.log(data);
           socket.data = data;
           socket.room = data.room;
           socket.join(data.room);
@@ -150,6 +150,7 @@ exports.connect = (server)=>
           {
             listRooms[data.room]={};
             listRooms[data.room].id = data.room;
+            listRooms[data.room].time = data.time;
             listRooms[data.room].users = [];
           }
           
@@ -204,12 +205,12 @@ exports.connect = (server)=>
 
         socket.on('chat', function (data) {
           console.log(socket.room);
-            socket.emit('chat', {
-              idSender : data.idSender,
-              sender : 'Tôi',
-              message: data.message
-            });
-            socket.to(socket.room).emit('chat', {
+            // socket.emit('chat', {
+            //   idSender : data.idSender,
+            //   sender : 'Tôi',
+            //   message: data.message
+            // });
+            io.in(socket.room).emit('chat', {
               idSender : data.idSender,
               sender: data.sender,
               message: data.message
@@ -292,7 +293,10 @@ exports.connect = (server)=>
           io.in(socket.room).emit('winner',"draw");
         });
         
-       
+        socket.on('endgame', function (data) {
+          io.in(socket.room).emit('endgame',data);
+          io.in(socket.room).emit('winner',data.winnerId);
+        });
        
       
 

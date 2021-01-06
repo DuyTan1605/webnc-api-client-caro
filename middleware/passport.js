@@ -75,7 +75,7 @@ passport.use(new LocalStrategy({
                     rank: user.rank,
                     total_match: user.total_match,
                     percent_win: user.percent_win,
-
+                    total_win: user.total_win
                 });
             } else {
                 return done(null, false, {
@@ -116,6 +116,7 @@ passport.use(new FacebookStrategy({
                         rank: rows[0].rank,
                         total_match: rows[0].total_match,
                         percent_win: rows[0].percent_win,
+                        total_win: rows[0].total_win
                     });
                 }
 
@@ -176,6 +177,7 @@ passport.use(new GoogleStrategy({
                         rank: rows[0].rank,
                         total_match: rows[0].total_match,
                         percent_win: rows[0].percent_win,
+                        total_win: rows[0].total_win
                     });
                 }
 

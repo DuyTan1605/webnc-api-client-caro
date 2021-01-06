@@ -3,8 +3,6 @@ var listUser=[];
 var listRooms = [];
 const _= require('lodash');
 const { async } = require("q");
-const { boards: boardModel1 } = require("../models/index")
-const { users: userModel } = require("../models/index")
 const formatMessage = require('./message');
 const {
   userJoin,
@@ -139,9 +137,14 @@ exports.connect = (server)=>
         //--------------------------------------------------------------------------------
 
 
-        socket.on('joinroom', function (data) {
+        socket.on('joinroom', async function (data) {
 
           console.log(data);
+          if(!data.time)
+          {
+            const result = await boardModel.get({key:'id',value:data.room});
+            data.time = result[0].time_for_one_step;
+          }
           socket.data = data;
           socket.room = data.room;
           socket.join(data.room);
@@ -245,10 +248,10 @@ exports.connect = (server)=>
             console.log("Socket room:",listRooms[data.roomInfo.id])
             io.in(socket.room).emit('on-reconnect', listRooms[data.roomInfo.id]);
 
-            socket.to(socket.room).emit('chat', {
-              sender: "Room's Bot",
-              message: "User "+ data.userInfo.name + " join room"
-            });
+            // socket.to(socket.room).emit('chat', {
+            //   sender: "Room's Bot",
+            //   message: "User "+ data.userInfo.name + " join room"
+            // });
 
             // send last move in case user missed it when reconnecting
             if (listRooms[data.roomInfo.id].lastMove) {
@@ -298,7 +301,17 @@ exports.connect = (server)=>
           io.in(socket.room).emit('winner',data.winnerId);
         });
        
-      
+        socket.on('invitation', function (data) {
+          io.emit("invitation",data);
+        });
+
+        socket.on('reject-invited', function (data) {
+          io.emit("reject-invited",data);
+        });
+
+        socket.on('accept-invited', function (data) {
+          io.emit("accept-invited",data);
+        });
 
         //------------------------------------------------------------------------------------
 
@@ -313,13 +326,13 @@ exports.connect = (server)=>
            if(socket.room)
            {
             const pos = listRooms[socket.room].users.findIndex(user => user.idDevice == socket.id);
-            if(pos>=0)
-            {
-              socket.to(socket.room).emit('chat', {
-                sender: "Room's Bot",
-                message: "User "+ listRooms[socket.room].users[pos].name + " left room"
-              });
-            }
+            // if(pos>=0)
+            // {
+            //   socket.to(socket.room).emit('chat', {
+            //     sender: "Room's Bot",
+            //     message: "User "+ listRooms[socket.room].users[pos].name + " left room"
+            //   });
+            // }
             listRooms[socket.room].users.splice(pos,1);
             console.log("pos: ",pos);
             console.log("List users: ",listRooms[socket.room]);

@@ -1,9 +1,11 @@
 const socketIo = require("socket.io");
 var listUser=[];
 var listRooms = [];
+var listRoomsNow = [];
 const _= require('lodash');
 const { async } = require("q");
 const formatMessage = require('./message');
+const shortid = require('shortid');
 const {
   userJoin,
   getCurrentUser,
@@ -313,6 +315,49 @@ exports.connect = (server)=>
           io.emit("accept-invited",data);
         });
 
+        socket.on('findPlayer', function (data) {
+  
+          // save data
+          socket.data = data;
+      
+          // find an empty room
+          for (var i = 0; i < listRoomsNow.length; i++) {
+      
+            // it's empty when there is no second player
+            if (listRoomsNow[i].playerO == null && data.point == listRoomsNow[i].playerX.point) {
+      
+              // fill empty seat and join room
+              listRoomsNow[i].playerO = data;
+              listRoomsNow[i].users.push(data);
+              socket.room = listRoomsNow[i].id;
+              socket.join(socket.room);
+      
+              // send successful message to both
+              io.in(listRoomsNow[i].id).emit('joinroom-now-success', listRoomsNow[i]);
+      
+              console.log('Room [' + socket.room + '] played');
+              return;
+            }
+          }
+      
+          // create new room if there is no empty one
+          var room = {
+            id: data.name + Date.now(),
+            playerX: data,
+            playerO: null,
+            time: 5,
+            users: []
+          }
+          room.users.push(data);
+          listRoomsNow.push(room);
+      
+          // add this client to the room
+          socket.room = room.id;
+          socket.join(socket.room);
+      
+          console.log('Room [' + socket.room + '] created');
+        });
+      
         //------------------------------------------------------------------------------------
 
 

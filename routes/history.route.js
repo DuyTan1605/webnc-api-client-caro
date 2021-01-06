@@ -22,13 +22,18 @@ router.post('/add', async (req, res, next) => {
   //  console.log(req.user);
     console.log(req.body);
     const entity = {
-        board: req.body.board,
         winner: req.body.winner,
         loser: req.body.loser,
         data: JSON.stringify(req.body.data),
         chat: JSON.stringify(req.body.chat),
         type: req.body.type
     }
+
+    if(typeof req.body.board != "string")
+    {
+        entity.board = req.body.board;
+    }
+
     historyModel.add(entity)
         .then((history)=>{
             res.status(200).json({

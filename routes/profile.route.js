@@ -42,7 +42,7 @@ router.post('/activate/:id', async (req, res, next) => {
     else{
         userModel.update('email',{email:req.user[0].email,activate:1})
         .then(user=>{
-            res.status(200).json({message:'Kịch hoạt tài khoản thành công'});
+            res.status(200).json({message:'Kích hoạt tài khoản thành công'});
         })
         .catch(err=>{
             res.status(400).json({

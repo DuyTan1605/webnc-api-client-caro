@@ -19,6 +19,9 @@ module.exports = {
     update : (field,entity) =>{
         console.log(field,entity)
         return db.update(`users`, field , entity);
+    },
+    getAllWithOrder: (field,type)=>{
+        return db.load(`select * from users order by ${field} ${type}`)
     }
 
 }

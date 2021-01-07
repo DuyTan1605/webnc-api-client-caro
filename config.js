@@ -1,6 +1,6 @@
 // these exports are for localhost and database mysql local
 var exports_local = {
-    'client-domain': '//localhost:3001/',
+    'client-domain': 'http://localhost:3001/',
     'server-domain': '//localhost:3000/',
     'database': {
         'host': 'localhost',

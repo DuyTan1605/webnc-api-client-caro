@@ -346,7 +346,7 @@ exports.connect = (server)=>
             id: data.name + Date.now(),
             playerX: data,
             playerO: null,
-            time: 5,
+            time: 10,
             users: []
           }
           room.users.push(data);

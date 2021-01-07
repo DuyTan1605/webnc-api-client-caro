@@ -48,7 +48,7 @@ router.post('/register', async (req, res, next) => {
     // check params
     if (!name || !password || !email ) {
         res.status(400).json({
-            message: 'Vui lòng nhập đầy đủ thông tin'
+            message: 'Please fill full infomation'
         });
         
     }
@@ -74,7 +74,7 @@ router.post('/register', async (req, res, next) => {
          if(result.length)
          {
             res.status(400).json({
-                message: "Email đã tồn tại"
+                message: "Email is existed"
             });
          }
        else{
@@ -85,8 +85,8 @@ router.post('/register', async (req, res, next) => {
                 from: 'caro@gmail.com',
                 to: email,
                 subject: 'Verification account by email',
-                html: `<h1>Welcome Caro !Click Link to activate your account</h1>
-                <a>${config["client-domain"]}activate/${token}</a>`
+                html: `<h1>Welcome Caro !</h1>
+                <a href='${config["client-domain"]}activate/${token}'>Click Link to activate your account</a>`
               };
               
               transporter.sendMail(mailOptions, function(error, info){
@@ -101,7 +101,7 @@ router.post('/register', async (req, res, next) => {
 
             userModel.add(entity).then(id => {
                 res.status(200).json({
-                    message: "Tạo tài khoản thành công, truy cập email để kịch hoạt tài khoản"
+                    message: "Create new account successfully. Please access email to activate your account!"
                 });
             }).catch(err => {
 
@@ -109,7 +109,7 @@ router.post('/register', async (req, res, next) => {
 
                 switch (err.code) {
                     case 'ER_DUP_ENTRY':
-                        errMessage = 'Email đã tồn tại';
+                        errMessage = 'Email is existed';
                         break;
                 }
 
@@ -187,8 +187,8 @@ router.post('/forgot',async (req,res,next)=>{
             from: 'caro@gmail.com',
             to: req.body.email,
             subject: 'Reset password by email',
-            html: `<h1>Welcome Caro !Click Link to reset your password</h1>
-            <a>${config["client-domain"]}reset/${token}</a>`
+            html: `<h1>Welcome Caro !</h1>
+            <a href='${config["client-domain"]}reset/${token}'>Click Link to reset your password</a>`
           };
           
           transporter.sendMail(mailOptions, function(error, info){
@@ -196,13 +196,13 @@ router.post('/forgot',async (req,res,next)=>{
               console.log(error);
              res.status(400).json({message:error})
             } else {
-               res.status(200).json({message:"Truy cập email để lấy mã rest"})
+               res.status(200).json({message:"Access your email to get reset code"})
               console.log('Email sent: ' + info.response);
             }
           });
     }
     else{
-        res.status(400).json({message:"Tài khoản không tồn tại"})
+        res.status(400).json({message:"Account isn't existed"})
     }
 })
 
@@ -213,10 +213,10 @@ router.post('/changePassword', passport.authenticate('jwt', {
     const hash = bcrypt.hashSync(req.body.password, saltRounds);
     userModel.update("id",{id:req.user[0].id,password:hash})
     .then(user=>{
-        res.status(200).json({message:"Đổi mật khẩu thành công"})
+        res.status(200).json({message:"Change password succesfully"})
     })
     .catch(err=>{
-        res.status(400).json({message:"Đổi mật khẩu không thành công"})
+        res.status(400).json({message:"Fail to change password"})
     })
 })
 
@@ -235,7 +235,7 @@ router.post('/changeinfo', passport.authenticate('jwt', {session: false}), async
         if(user.length > 0 && user[0].id != req.user[0].id)
         {
             return res.status(400).json({
-                message: 'Email đã tồn tại'
+                message: 'Email has already existed'
             });
         }
     }
@@ -265,13 +265,13 @@ router.post('/changeinfo', passport.authenticate('jwt', {session: false}), async
             userModel.update("id",entity).then(id => {
                 const newInfo = {...req.user[0], name: name,email: email};
                 return res.status(200).json({
-                    message: 'Cập nhật thông tin thành công',
+                    message: 'Update infomation successfully!',
                     userInfo: newInfo,
                     token: jwt.sign(JSON.stringify(newInfo),"caro_client")
                 });
             }).catch(err => {
                 return res.status(400).json({
-                    message: 'Đã xảy ra lỗi, vui lòng thử lại'
+                    message: 'Error! Please try again!'
                 });
             })
 });
@@ -284,7 +284,7 @@ router.post('/changePasswordFromProfile', passport.authenticate('jwt', {session:
         userModel.get({key:'id',value:req.user[0].id}).then(rows => {
             if (!bcrypt.compareSync(oldPassword, rows[0].password)) {
                 return res.status(400).json({
-                    message: 'Mật khẩu cũ không chính xác'
+                    message: 'Old password is incorrect'
                 });
             }
             //var user = rows[0];
@@ -298,17 +298,17 @@ router.post('/changePasswordFromProfile', passport.authenticate('jwt', {session:
             // write to database
             userModel.update("id",entity).then(id => {
                 return res.status(200).json({
-                    message: 'Cập nhật mật khẩu thành công'
+                    message: 'Update information succesfully'
                 });
             }).catch(err => {
                 return res.status(400).json({
-                    message: 'Đã xảy ra lỗi, vui lòng thử lại'
+                    message: 'Error! Please try again'
                 });
             })
             
         }).catch(err => {
             return res.status(400).json({
-                message: 'Đã xảy ra lỗi, vui lòng thử lại'
+                message: 'Error! Please try again'
             });
         })
 });

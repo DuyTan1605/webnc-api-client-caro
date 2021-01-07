@@ -54,7 +54,7 @@ passport.use(new LocalStrategy({
         userModel.get({key:"email",value:username}).then(rows => {
             if (rows.length === 0) {
                 return done(null, false, {
-                    message: 'Tài khoản không tồn tại'
+                    message: 'Account is not existed'
                 });
             }
             var user = rows[0];
@@ -79,7 +79,7 @@ passport.use(new LocalStrategy({
                 });
             } else {
                 return done(null, false, {
-                    message: 'Mật khẩu không chính xác'
+                    message: 'Password is incorrect'
                 })
             }
         }).catch(err => {

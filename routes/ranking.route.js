@@ -13,7 +13,7 @@ router.get('/', async (req, res, next) => {
     {
         console.log(err);
         res.status(400).json({
-            message: "Có lỗi xảy ra"
+            message: "Error! Please try again"
         });
     }
 

@@ -25,7 +25,7 @@ router.get('/profile', (req, res, next) => {
     }
     else {
         res.status(400).json({
-            message: 'Đã xảy ra lỗi, vui lòng thử lại'
+            message: 'Error! Please try again'
         })
     }
 });
@@ -37,12 +37,12 @@ router.post('/activate/:id', async (req, res, next) => {
     
     if(result[0].activate ==1)
     {
-        res.status(200).json({message:'Tài khoản đã kích hoạt'});
+        res.status(200).json({message:'Account had been activated'});
     }
     else{
         userModel.update('email',{email:req.user[0].email,activate:1})
         .then(user=>{
-            res.status(200).json({message:'Kích hoạt tài khoản thành công'});
+            res.status(200).json({message:'Activate account successfully'});
         })
         .catch(err=>{
             res.status(400).json({

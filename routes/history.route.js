@@ -50,7 +50,10 @@ router.post('/add', async (req, res, next) => {
         loser: req.body.loser,
         data: JSON.stringify(req.body.data),
         chat: JSON.stringify(req.body.chat),
-        type: req.body.type
+        type: req.body.type,
+        date: req.body.date,
+        winnerType: req.body.winnerType,
+        loserType: req.body.loserType
     }
 
     if(typeof req.body.board != "string")

@@ -23,6 +23,25 @@ router.get('/', async (req, res, next) => {
         res.status(200).json(newMyHistory);
 });
 
+router.get('/:id', async (req, res, next) => {
+    
+    console.log("Params: ",req.params.id);
+    const histories = await historyModel.all();
+    const myHistory = histories.filter(history=>{
+        return (history.winner == req.user[0].id || history.loser == req.user[0].id) && history.id == req.params.id;
+    })
+    const users = await userModel.all();
+
+    const newMyHistory = myHistory.map((history)=>{
+        let competitorId = req.user[0].id == history.winner ? history.loser : history.winner;
+        let competitor = _.findIndex(users,{id:parseInt(competitorId)});
+        history.competitorId = competitorId ;
+        history.competitorName = users[competitor].name;
+        return history;
+    })
+    res.status(200).json(newMyHistory);
+});
+
 router.post('/add', async (req, res, next) => {
   //  console.log(req.user);
     console.log(req.body);

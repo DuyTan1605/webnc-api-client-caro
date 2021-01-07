@@ -334,8 +334,9 @@ exports.connect = (server)=>
       
               // send successful message to both
               io.in(listRoomsNow[i].id).emit('joinroom-now-success', listRoomsNow[i]);
-      
+             
               console.log('Room [' + socket.room + '] played');
+              //delete listRoomsNow[i];
               return;
             }
           }
@@ -357,7 +358,20 @@ exports.connect = (server)=>
       
           console.log('Room [' + socket.room + '] created');
         });
-      
+        
+
+        socket.on("cancelFindPlayer",function(data)
+        {
+            for(let i=0;i<listRoomsNow.length;i++)
+            {
+              if(listRoomsNow[i].playerX.id == data.id)
+              {
+                delete listRoomsNow[i];
+              }
+            }
+            console.log("List room now :", listRoomsNow);
+        })
+
         //------------------------------------------------------------------------------------
 
 

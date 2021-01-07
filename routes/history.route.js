@@ -5,18 +5,23 @@ const userModel = require("../model/user.model");
 const _ = require("lodash");
 var helpers = require("../public/helpers/helpers")
 // get history infomation
-// router.get('/', (req, res, next) => {
-//     historyModel.all().then(historys=>{
-//         // const myhistory = _.filter(historys,{created_by:parseInt(req.user[0].id)});
-//         // const otherhistory = _.xor(historys,myhistory);
+router.get('/', async (req, res, next) => {
+    
+        const histories = await historyModel.all();
+        const myHistory = histories.filter(history=>{
+            return history.winner == req.user[0].id || history.loser == req.user[0].id;
+        })
+        const users = await userModel.all();
 
-//         res.status(200).json(historys);
-//     })
-//     .catch(err=>{
-//         console.log(err)
-//         res.status(400).json(err);
-//     })
-// });
+        const newMyHistory = myHistory.map((history)=>{
+            let competitorId = req.user[0].id == history.winner ? history.loser : history.winner;
+            let competitor = _.findIndex(users,{id:parseInt(competitorId)});
+            history.competitorId = competitorId ;
+            history.competitorName = users[competitor].name;
+            return history;
+        })
+        res.status(200).json(newMyHistory);
+});
 
 router.post('/add', async (req, res, next) => {
   //  console.log(req.user);

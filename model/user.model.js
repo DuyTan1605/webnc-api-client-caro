@@ -22,6 +22,9 @@ module.exports = {
     },
     getAllWithOrder: (field,type)=>{
         return db.load(`select * from users order by ${field} ${type}`)
-    }
+    },
+    getAccountById: entity => {
+        return db.load(`select * from users where ${entity.key} = ${entity.value}`);
+    },
 
 }

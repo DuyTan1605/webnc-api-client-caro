@@ -8,8 +8,6 @@ const cors=require('cors');
 const dotenv= require('dotenv').config();
 const passport = require("passport");
 
-
-const accountRouter = require('./routes/accountRoute');
 const boardRouter = require("./routes/board.route");
 const historyRouter = require("./routes/history.route")
 const usersRouter = require("./routes/user.route");
@@ -31,7 +29,6 @@ app.use(cors());
 require('./middleware/passport');
 
 
-app.use('/account', accountRouter);
 app.use("/boards",passport.authenticate('jwt', {
   session: false
 }),boardRouter)

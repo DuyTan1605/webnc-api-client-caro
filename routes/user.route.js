@@ -6,6 +6,7 @@ var jwt = require('jsonwebtoken');
 var router = express.Router();
 var passport = require('passport');
 var config = require("../config");
+require('dotenv').config();
 //var config = require('../config.js');
 var helpers = require("../public/helpers/helpers")
 const { cloudinary } = require('../utils/cloudinary');
@@ -15,8 +16,8 @@ var nodemailer = require('nodemailer');
 var transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'dreamleage2000@gmail.com',
-    pass: '0949844063'
+    user: process.env.email,
+    pass: process.env.password
   }
 });
 
